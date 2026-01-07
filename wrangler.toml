@@ -1,2 +1,2 @@
 [pages]
-build_output_dir = ".open-next/output"
+pages_build_output_dir = ".open-next/output"
