@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // The output property is removed to enable server-side rendering
 };
 
 export default nextConfig;
