@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "open-next-build": "open-next build",
+    "package": "open-next build",
     "start": "next start"
   },
   "dependencies": {
@@ -21,6 +21,6 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "typescript": "^5",
-    "open-next": "^3.0.6"
+    "open-next": "^2.0.5"
   }
 }
