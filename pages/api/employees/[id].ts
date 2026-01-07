@@ -1,6 +1,6 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import allEmployees from '../../../../data.json';
+import allEmployees from '../../../data.json';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
