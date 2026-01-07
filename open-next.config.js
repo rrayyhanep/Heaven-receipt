@@ -1,3 +1,6 @@
+
+const { cloudflarePages } = require("open-next/adapters");
+
 module.exports = {
-  adapter: require("open-next/adapters/cloudflare-pages"),
+  adapter: cloudflarePages(),
 };
