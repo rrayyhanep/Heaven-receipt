@@ -1,0 +1,142 @@
+/* styles/Employees.module.css */
+
+.card {
+  width: 100%;
+  max-width: 900px;
+  padding: 3.5rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+}
+
+.title {
+  margin: 0 0 2.5rem 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #101828;
+  text-align: left;
+}
+
+.subtitle {
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #101828;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #344054;
+}
+
+.formGroup input {
+  padding: 1rem 1.25rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #101828;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formGroup input::placeholder {
+  color: #98a2b3;
+}
+
+.formGroup input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+/* Hide arrows from number inputs */
+.formGroup input[type='number']::-webkit-inner-spin-button,
+.formGroup input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.formGroup input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.button {
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #1e40af;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  height: fit-content;
+}
+
+.button:hover {
+  background-color: #1c3899;
+}
+
+.employeeList {
+  margin-top: 2rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.table th {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  font-size: 1rem;
+  color: #101828;
+}
+
+.deleteButton {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #ef4444;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteButton:hover {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+}

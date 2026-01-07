@@ -1,0 +1,16 @@
+/* components/Layout.module.css */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding: 2rem 1rem;
+}
+
+.main {
+    width: 100%;
+    max-width: 900px;
+}
