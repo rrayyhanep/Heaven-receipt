@@ -1,3 +1,4 @@
 name = "heaven-receipt"
 compatibility_date = "2026-01-07"
+pages_build_output_dir = "out"
 node_compat = true
