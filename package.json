@@ -4,22 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build:next": "next build",
-    "build": "open-next build --build-command \"npm run build:next\"",
+    "build": "open-next build",
     "start": "next start"
   },
   "dependencies": {
-    "next": "16.1.1",
+    "next": "^14.2.3",
     "pdfkit": "^0.17.2",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/pdfkit": "^0.17.4",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "babel-plugin-react-compiler": "1.0.0",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "typescript": "^5",
     "open-next": "3.0.0"
   }
