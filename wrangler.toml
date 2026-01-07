@@ -1,2 +1,2 @@
-name = "heaven-receipt"
-pages_build_output_dir = ".open-next/output"
+[pages]
+build_output_dir = ".open-next/output"
