@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && rm -rf out && mkdir -p out/.next && cp -r .next/standalone/. out && cp -r .next/static out/.next && cp -r public out",
+    "build": "next build",
+    "postbuild": "rm -rf out && mkdir -p out/.next && cp -r .next/standalone/. out && cp -r .next/static out/.next && cp -r public out",
     "start": "next start"
   },
   "dependencies": {
