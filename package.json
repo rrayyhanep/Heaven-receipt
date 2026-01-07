@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:prod": "open-next build",
+    "build:prod": "open-next build && cp -r .open-next/worker/* .open-next/",
     "start": "next start"
   },
   "dependencies": {
