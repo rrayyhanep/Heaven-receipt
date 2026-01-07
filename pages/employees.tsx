@@ -1,86 +1,53 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styles from '../styles/Employees.module.css';
+import { useRouter } from 'next/router';
 
 interface Employee {
   id: string;
   name: string;
-  pendingBalance: number;
+  pendingBalance: number | null;
+  basicSalary: number | null;
 }
 
 export default function Employees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [newEmployeeName, setNewEmployeeName] = useState('');
-  const [newEmployeeBalance, setNewEmployeeBalance] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
-    const storedEmployees = localStorage.getItem('employees');
-    if (storedEmployees) {
-      setEmployees(JSON.parse(storedEmployees));
-    }
+    fetchEmployees();
   }, []);
 
-  const addEmployee = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newEmployeeName) {
-      alert('Please enter a name.');
-      return;
-    }
-
-    const newEmployee: Employee = {
-      id: Date.now().toString(),
-      name: newEmployeeName,
-      pendingBalance: parseFloat(newEmployeeBalance) || 0,
-    };
-
-    const updatedEmployees = [...employees, newEmployee];
-    setEmployees(updatedEmployees);
-    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
-    setNewEmployeeName('');
-    setNewEmployeeBalance('');
+  const fetchEmployees = async () => {
+    const res = await fetch('/api/employees');
+    const data = await res.json();
+    setEmployees(data);
   };
 
-  const deleteEmployee = (id: string) => {
-    const updatedEmployees = employees.filter((emp) => emp.id !== id);
-    setEmployees(updatedEmployees);
-    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
+  const deleteEmployee = async (id: string) => {
+    await fetch(`/api/employees/${id}`, {
+      method: 'DELETE',
+    });
+    fetchEmployees();
+  };
+
+  const editEmployee = (id: string) => {
+    router.push(`/edit-employee/${id}`);
   };
 
   return (
-    <>
+    <div className={styles.pageContainer}>
       <Head>
         <title>Manage Employees</title>
       </Head>
 
       <div className={styles.card}>
-        <h1 className={styles.title}>Manage Employees</h1>
-
-        <form onSubmit={addEmployee} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label htmlFor="newEmployeeName">Employee Name</label>
-            <input
-              type="text"
-              id="newEmployeeName"
-              value={newEmployeeName}
-              onChange={(e) => setNewEmployeeName(e.target.value)}
-              placeholder="Enter employee's full name"
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="newEmployeeBalance">Initial Pending Balance</label>
-            <input
-              type="number"
-              id="newEmployeeBalance"
-              value={newEmployeeBalance}
-              onChange={(e) => setNewEmployeeBalance(e.target.value)}
-              placeholder="0.00"
-              onWheel={(e) => e.currentTarget.blur()}
-            />
-          </div>
-          <button type="submit" className={styles.button}>
-            Add Employee
+        <div className={styles.header}>
+          <h1 className={styles.title}>Manage Employees</h1>
+          <button onClick={() => router.push('/add-employee')} className={styles.button}>
+            Add New Employee
           </button>
-        </form>
+        </div>
 
         <div className={styles.employeeList}>
           <h2 className={styles.subtitle}>Current Employees</h2>
@@ -88,6 +55,7 @@ export default function Employees() {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Basic Salary</th>
                 <th>Pending Balance</th>
                 <th>Action</th>
               </tr>
@@ -96,9 +64,16 @@ export default function Employees() {
               {employees.map((employee) => (
                 <tr key={employee.id}>
                   <td>{employee.name}</td>
-                  <td>{employee.pendingBalance.toFixed(2)}</td>
-                  <td>
-                    <button 
+                  <td>{employee.basicSalary ? `₹${employee.basicSalary.toFixed(2)}` : '₹0.00'}</td>
+                  <td>{employee.pendingBalance ? `₹${employee.pendingBalance.toFixed(2)}` : '₹0.00'}</td>
+                  <td className={styles.actionCell}>
+                    <button
+                      className={styles.editButton}
+                      onClick={() => editEmployee(employee.id)}
+                    >
+                      Edit
+                    </button>
+                    <button
                       className={styles.deleteButton}
                       onClick={() => deleteEmployee(employee.id)}
                     >
@@ -110,7 +85,10 @@ export default function Employees() {
             </tbody>
           </table>
         </div>
+        <button onClick={() => router.push('/')} className={styles.button} style={{ marginTop: '1.5rem' }}>
+          Go to Home
+        </button>
       </div>
-    </>
+    </div>
   );
 }

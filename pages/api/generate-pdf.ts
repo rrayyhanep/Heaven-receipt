@@ -8,10 +8,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       monthYear,
       employeeName,
       basicSalary,
+      pendingBalance,
       advance,
       leaveDeduction,
       totalSalary,
-      balance,
+      balanceToReceive,
+      netSalary,
     } = req.body;
 
     try {
@@ -76,9 +78,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       const fields = [
         { label: 'Basic Salary', value: basicSalary },
+        { label: 'Old Balance', value: pendingBalance },
         { label: 'Advance Taken', value: advance },
         { label: 'Leave Deduction', value: leaveDeduction },
-        { label: 'Net Pay (Balance)', value: balance },
+        { label: 'Net Salary', value: netSalary },
+        { label: 'Total Salary', value: totalSalary },
+        { label: 'Balance to Receive', value: balanceToReceive },
       ];
       
       doc.fillColor('#000000').font('Helvetica').fontSize(12);
@@ -112,7 +117,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       doc.font('Helvetica').fontSize(12);
       doc.text(`Total Salary: ${totalSalary}`, pageLeft, y);
       y += 20;
-      doc.text(`Balance to Receive: ${balance}`, pageLeft, y);
+      doc.text(`Balance to Receive: ${balanceToReceive}`, pageLeft, y);
       y += 35;
 
       // Signatures Heading

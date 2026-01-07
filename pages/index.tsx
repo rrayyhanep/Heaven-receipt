@@ -1,77 +1,89 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
+import { useRouter } from 'next/router';
 
 interface Employee {
   id: string;
   name: string;
-  pendingBalance: number;
+  pendingBalance: number | null;
+  basicSalary: number | null;
 }
 
 export default function Home() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [selectedEmployee, setSelectedEmployee] = useState('');
-  const [monthYear, setMonthYear] = useState('');
-  const [basicSalary, setBasicSalary] = useState('');
-  const [advance, setAdvance] = useState('');
-  const [leaveDeduction, setLeaveDeduction] = useState('');
-  const [totalSalary, setTotalSalary] = useState('');
-  const [balance, setBalance] = useState('');
-  const [pendingBalance, setPendingBalance] = useState(0);
+  const [selectedEmployee, setSelectedEmployee] = useState<string>('');
+  const [basicSalary, setBasicSalary] = useState<string>('0');
+  const [pendingBalance, setPendingBalance] = useState<string>('0');
+  const [advance, setAdvance] = useState<string>('0');
+  const [leaveDeduction, setLeaveDeduction] = useState<string>('0');
+  const [netSalary, setNetSalary] = useState<string>('0');
+  const [totalSalary, setTotalSalary] = useState<string>('0');
+  const [balanceToReceive, setBalanceToReceive] = useState<string>('0');
+  const router = useRouter();
 
   useEffect(() => {
-    const storedEmployees = localStorage.getItem('employees');
-    if (storedEmployees) {
-      setEmployees(JSON.parse(storedEmployees));
-    }
+    fetchEmployees();
   }, []);
 
   useEffect(() => {
-    if (selectedEmployee) {
-      const employee = employees.find((emp) => emp.id === selectedEmployee);
-      if (employee) {
-        setPendingBalance(employee.pendingBalance);
-      }
-    } else {
-      setPendingBalance(0);
+    const employee = employees.find((e) => e.id === selectedEmployee);
+    if (employee) {
+      setBasicSalary(employee.basicSalary?.toString() || '0');
+      setPendingBalance(employee.pendingBalance?.toString() || '0');
     }
   }, [selectedEmployee, employees]);
 
   useEffect(() => {
-    const total = parseFloat(totalSalary) || 0;
-    const adv = parseFloat(advance) || 0;
-    const leave = parseFloat(leaveDeduction) || 0;
-    const newBalance = pendingBalance + total - adv - leave;
-    setBalance(newBalance.toFixed(2));
-  }, [totalSalary, advance, leaveDeduction, pendingBalance]);
+    const currentPending = parseFloat(pendingBalance) || 0;
+    const currentBasic = parseFloat(basicSalary) || 0;
+    const currentAdvance = parseFloat(advance) || 0;
+    const currentLeaveDeduction = parseFloat(leaveDeduction) || 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const newNetSalary = currentPending + currentBasic - currentAdvance - currentLeaveDeduction;
+    setNetSalary(newNetSalary.toFixed(2));
+  }, [pendingBalance, basicSalary, advance, leaveDeduction]);
+
+  useEffect(() => {
+    const currentNet = parseFloat(netSalary) || 0;
+    const currentTotal = parseFloat(totalSalary) || 0;
+
+    const newBalanceToReceive = currentNet - currentTotal;
+    setBalanceToReceive(newBalanceToReceive.toFixed(2));
+  }, [netSalary, totalSalary]);
+
+  const fetchEmployees = async () => {
+    const res = await fetch('/api/employees');
+    const data = await res.json();
+    setEmployees(data);
+  };
+
+  const generateSalarySlip = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const employee = employees.find((emp) => emp.id === selectedEmployee);
-    if (!employee) {
-      alert('Please select an employee.');
-      return;
-    }
+    if (!employee) return;
 
-    const response = await fetch('/api/generate-pdf', {
+    const salaryData = {
+      employeeName: employee.name,
+      basicSalary: parseFloat(basicSalary),
+      pendingBalance: parseFloat(pendingBalance),
+      advance: parseFloat(advance),
+      leaveDeduction: parseFloat(leaveDeduction),
+      netSalary: parseFloat(netSalary),
+      totalSalary: parseFloat(totalSalary),
+      balanceToReceive: parseFloat(balanceToReceive),
+    };
+
+    const res = await fetch('/api/generate-pdf', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        monthYear,
-        employeeName: employee.name,
-        basicSalary,
-        advance,
-        leaveDeduction,
-        totalSalary,
-        balance,
-      }),
+      body: JSON.stringify(salaryData),
     });
 
-    if (response.ok) {
-      const blob = await response.blob();
+    if (res.ok) {
+      const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -81,12 +93,21 @@ export default function Home() {
       a.remove();
 
       // Update pending balance
-      const updatedEmployees = employees.map((emp) =>
-        emp.id === selectedEmployee ? { ...emp, pendingBalance: parseFloat(balance) } : emp
+      const updateRes = await fetch(`/api/employees/${selectedEmployee}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ pendingBalance: parseFloat(balanceToReceive) }),
+        }
       );
-      setEmployees(updatedEmployees);
-      localStorage.setItem('employees', JSON.stringify(updatedEmployees));
-      setPendingBalance(parseFloat(balance));
+
+      if (updateRes.ok) {
+        fetchEmployees(); // Refresh employee data
+      } else {
+        alert('Failed to update pending balance');
+      }
 
     } else {
       alert('Failed to generate PDF');
@@ -97,17 +118,16 @@ export default function Home() {
     <>
       <Head>
         <title>Salary Slip Generator</title>
-        <meta name="description" content="Generate a PDF salary slip" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <div className={styles.card}>
-        <h1 className={styles.title}>Generate Salary Slip</h1>
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <h1 className={styles.title}>Salary Slip Generator</h1>
+
+        <form onSubmit={generateSalarySlip} className={styles.form}>
           <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-            <label htmlFor="employeeName">Employee Name</label>
+            <label htmlFor="employee">Select Employee</label>
             <select
-              id="employeeName"
+              id="employee"
               value={selectedEmployee}
               onChange={(e) => setSelectedEmployee(e.target.value)}
               required
@@ -120,28 +140,29 @@ export default function Home() {
               ))}
             </select>
           </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="monthYear">Month & Year</label>
-            <input
-              type="text"
-              id="monthYear"
-              value={monthYear}
-              onChange={(e) => setMonthYear(e.target.value)}
-              placeholder="e.g., July 2024"
-            />
-          </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="basicSalary">Basic Salary</label>
             <input
               type="number"
               id="basicSalary"
               value={basicSalary}
-              onChange={(e) => setBasicSalary(e.target.value)}
-              placeholder="0.00"
-              required
-              onWheel={(e) => e.currentTarget.blur()}
+              readOnly
+              className={styles.readOnly}
             />
           </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="pendingBalance">Pending Balance</label>
+            <input
+              type="number"
+              id="pendingBalance"
+              value={pendingBalance}
+              readOnly
+              className={styles.readOnly}
+            />
+          </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="advance">Advance Taken</label>
             <input
@@ -150,9 +171,10 @@ export default function Home() {
               value={advance}
               onChange={(e) => setAdvance(e.target.value)}
               placeholder="0.00"
-              onWheel={(e) => e.currentTarget.blur()}
+              required
             />
           </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="leaveDeduction">Leave Deduction</label>
             <input
@@ -161,11 +183,23 @@ export default function Home() {
               value={leaveDeduction}
               onChange={(e) => setLeaveDeduction(e.target.value)}
               placeholder="0.00"
-              onWheel={(e) => e.currentTarget.blur()}
+              required
             />
           </div>
+
           <div className={styles.formGroup}>
-            <label htmlFor="totalSalary">Total Salary</label>
+            <label htmlFor="netSalary">Net Salary</label>
+            <input
+              type="number"
+              id="netSalary"
+              value={netSalary}
+              readOnly
+              className={styles.readOnly}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="totalSalary">Total Salary to be Paid</label>
             <input
               type="number"
               id="totalSalary"
@@ -173,24 +207,28 @@ export default function Home() {
               onChange={(e) => setTotalSalary(e.target.value)}
               placeholder="0.00"
               required
-              onWheel={(e) => e.currentTarget.blur()}
             />
           </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="balance">Balance</label>
+
+          <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+            <label htmlFor="balanceToReceive">Balance to Receive</label>
             <input
               type="number"
-              id="balance"
-              value={balance}
+              id="balanceToReceive"
+              value={balanceToReceive}
               readOnly
               className={styles.readOnly}
-              onWheel={(e) => e.currentTarget.blur()}
             />
           </div>
-          <button type="submit" className={`${styles.button} ${styles.fullWidth}`}>
+
+          <button type="submit" className={styles.button}>
             Generate Salary Slip
           </button>
         </form>
+
+        <button onClick={() => router.push('/employees')} className={styles.button} style={{ marginTop: '1.5rem' }}>
+          Manage Employees
+        </button>
       </div>
     </>
   );
