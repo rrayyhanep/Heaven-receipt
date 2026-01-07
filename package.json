@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "wrangler pages dev --proxy 3000 -- npm run dev:nextjs",
+    "dev": "wrangler pages dev --node-compat --proxy 3000 -- npm run dev:nextjs",
     "dev:nextjs": "next dev",
     "build": "next build",
     "start": "next start"
