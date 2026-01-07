@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // The output property is removed to enable server-side rendering
-};
+  output: 'standalone', // keep server functions for OpenNext
+  experimental: {
+    outputFileTracingRoot: __dirname, // ensures all necessary files are traced
+  },
+  reactStrictMode: true,
+}
 
-export default nextConfig;
+module.exports = nextConfig
