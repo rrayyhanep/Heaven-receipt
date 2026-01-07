@@ -1,0 +1,7 @@
+
+name = "heaven-receipt"
+compatibility_date = "2024-01-07"
+
+[pages]
+build-command = "npm run build"
+build-output-dir = "out"
