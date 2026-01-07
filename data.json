@@ -1,10 +1,3 @@
 {
-  "employees": [
-    {
-      "id": "1767752508781",
-      "name": "Raihan E P",
-      "pendingBalance": 800,
-      "basicSalary": 5000
-    }
-  ]
+  "employees": []
 }
