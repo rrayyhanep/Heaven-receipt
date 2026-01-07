@@ -1,29 +1,35 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import allEmployees from '../../../data.json';
+import { db } from '../../../lib/firebase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
+  const employeesCollection = db.collection('employees');
 
   switch (method) {
     case 'GET':
       try {
-        res.status(200).json(allEmployees.employees);
+        const snapshot = await employeesCollection.get();
+        const employees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).json(employees);
       } catch (error) {
-        res.status(500).json({ message: 'Failed to load employees' });
+        console.error('Firestore GET error:', error);
+        res.status(500).json({ message: 'Failed to fetch employees from Firestore' });
       }
       break;
+
     case 'POST':
       try {
-        // Note: This only updates the data in memory for this request.
-        // It won't persist because there's no database.
-        const newEmployee = req.body;
-        allEmployees.employees.push(newEmployee);
+        const newEmployeeData = req.body;
+        const docRef = await employeesCollection.add(newEmployeeData);
+        const newEmployee = { id: docRef.id, ...newEmployeeData };
         res.status(201).json(newEmployee);
       } catch (error) {
-        res.status(500).json({ message: 'Failed to add employee' });
+        console.error('Firestore POST error:', error);
+        res.status(500).json({ message: 'Failed to add employee to Firestore' });
       }
       break;
+
     default:
       res.setHeader('Allow', ['GET', 'POST']);
       res.status(405).end(`Method ${method} Not Allowed`);

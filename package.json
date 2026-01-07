@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "firebase-admin": "^13.6.0",
     "next": "^14.2.3",
     "pdfkit": "0.17.2",
     "react": "^18.3.1",

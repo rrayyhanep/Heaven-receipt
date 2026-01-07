@@ -1,40 +1,59 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import allEmployees from '../../../data.json';
+import { db } from '../../../lib/firebase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
   const { id } = req.query;
 
-  const employeeIndex = allEmployees.employees.findIndex((e) => e.id === id);
+  // Ensure the ID is a string, as it comes from the URL.
+  if (typeof id !== 'string') {
+    return res.status(400).json({ message: 'Invalid ID format.' });
+  }
+
+  const employeeDocRef = db.collection('employees').doc(id);
 
   switch (method) {
     case 'GET':
-      if (employeeIndex > -1) {
-        res.status(200).json(allEmployees.employees[employeeIndex]);
-      } else {
-        res.status(404).json({ message: 'Employee not found' });
+      try {
+        const doc = await employeeDocRef.get();
+        if (!doc.exists) {
+          return res.status(404).json({ message: 'Employee not found' });
+        }
+        res.status(200).json({ id: doc.id, ...doc.data() });
+      } catch (error) {
+        console.error('Firestore GET by ID error:', error);
+        res.status(500).json({ message: 'Failed to fetch employee' });
       }
       break;
+
     case 'PUT':
-      if (employeeIndex > -1) {
-        // Note: This only updates the data in memory for this request.
-        const updatedEmployee = { ...allEmployees.employees[employeeIndex], ...req.body };
-        allEmployees.employees[employeeIndex] = updatedEmployee;
-        res.status(200).json(updatedEmployee);
-      } else {
-        res.status(404).json({ message: 'Employee not found' });
+      try {
+        // The 'set' method with { merge: true } will update fields or create the document if it doesn't exist.
+        // Using 'update' is stricter and fails if the document doesn't exist.
+        await employeeDocRef.update(req.body);
+        const updatedDoc = await employeeDocRef.get();
+        res.status(200).json({ id: updatedDoc.id, ...updatedDoc.data() });
+      } catch (error) {
+        console.error('Firestore PUT error:', error);
+        res.status(500).json({ message: 'Failed to update employee' });
       }
       break;
+
     case 'DELETE':
-      if (employeeIndex > -1) {
-        // Note: This only updates the data in memory for this request.
-        const deletedEmployee = allEmployees.employees.splice(employeeIndex, 1);
-        res.status(200).json(deletedEmployee[0]);
-      } else {
-        res.status(404).json({ message: 'Employee not found' });
+      try {
+        const doc = await employeeDocRef.get();
+        if (!doc.exists) {
+          return res.status(404).json({ message: 'Employee not found' });
+        }
+        await employeeDocRef.delete();
+        res.status(200).json({ message: 'Employee deleted successfully', id: id });
+      } catch (error) {
+        console.error('Firestore DELETE error:', error);
+        res.status(500).json({ message: 'Failed to delete employee' });
       }
       break;
+
     default:
       res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
       res.status(405).end(`Method ${method} Not Allowed`);
