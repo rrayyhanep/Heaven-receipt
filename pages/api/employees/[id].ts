@@ -1,76 +1,42 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 
-const dataFilePath = path.join(process.cwd(), 'data.json');
+import type { NextApiRequest, NextApiResponse } from 'next';
+import allEmployees from '../../../json/employees.json';
 
-const readData = () => {
-  const jsonData = fs.readFileSync(dataFilePath);
-  return JSON.parse(jsonData.toString());
-};
-
-const writeData = (data: any) => {
-  fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
-};
-
-export default (req: NextApiRequest, res: NextApiResponse) => {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { method } = req;
   const { id } = req.query;
 
-  if (req.method === 'GET') {
-    try {
-      const data = readData();
-      const employee = data.employees.find((emp: any) => emp.id === id);
-      if (employee) {
-        res.status(200).json(employee);
-      } else {
-        res.status(404).json({ message: 'Employee not found' });
-      }
-    } catch (error) {
-      res.status(500).json({ message: 'Error reading data' });
-    }
-  } else if (req.method === 'PUT') {
-    try {
-      const data = readData();
-      const employeeIndex = data.employees.findIndex((emp: any) => emp.id === id);
-      if (employeeIndex !== -1) {
-        const employee = data.employees[employeeIndex];
-        const { name, pendingBalance, basicSalary } = req.body;
+  const employeeIndex = allEmployees.findIndex((e) => e.id === id);
 
-        if (name !== undefined) {
-          employee.name = name;
-        }
-        if (pendingBalance !== undefined) {
-          employee.pendingBalance = pendingBalance;
-        }
-        if (basicSalary !== undefined) {
-          employee.basicSalary = basicSalary;
-        }
-
-        data.employees[employeeIndex] = employee;
-        writeData(data);
-        res.status(200).json(employee);
+  switch (method) {
+    case 'GET':
+      if (employeeIndex > -1) {
+        res.status(200).json(allEmployees[employeeIndex]);
       } else {
         res.status(404).json({ message: 'Employee not found' });
       }
-    } catch (error) {
-      res.status(500).json({ message: 'Error writing data' });
-    }
-  } else if (req.method === 'DELETE') {
-    try {
-      const data = readData();
-      const employeeIndex = data.employees.findIndex((emp: any) => emp.id === id);
-      if (employeeIndex !== -1) {
-        data.employees.splice(employeeIndex, 1);
-        writeData(data);
-        res.status(204).end();
+      break;
+    case 'PUT':
+      if (employeeIndex > -1) {
+        // Note: This only updates the data in memory for this request.
+        const updatedEmployee = { ...allEmployees[employeeIndex], ...req.body };
+        allEmployees[employeeIndex] = updatedEmployee;
+        res.status(200).json(updatedEmployee);
       } else {
         res.status(404).json({ message: 'Employee not found' });
       }
-    } catch (error) {
-      res.status(500).json({ message: 'Error writing data' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+      break;
+    case 'DELETE':
+      if (employeeIndex > -1) {
+        // Note: This only updates the data in memory for this request.
+        const deletedEmployee = allEmployees.splice(employeeIndex, 1);
+        res.status(200).json(deletedEmployee[0]);
+      } else {
+        res.status(404).json({ message: 'Employee not found' });
+      }
+      break;
+    default:
+      res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
+      res.status(405).end(`Method ${method} Not Allowed`);
   }
-};
+}
