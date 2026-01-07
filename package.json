@@ -20,6 +20,6 @@
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "typescript": "^5",
-    "open-next": "^2.4.0"
+    "open-next": "3.0.0"
   }
 }
