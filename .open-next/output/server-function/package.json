@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "package": "next build && open-next build",
+    "package": "next build && open-next build && mkdir -p .open-next/output && mv .open-next/assets .open-next/cache .open-next/image-optimization-function .open-next/revalidation-function .open-next/server-function .open-next/warmer-function .open-next/output",
     "start": "next start"
   },
   "dependencies": {
